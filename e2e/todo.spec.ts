@@ -1,4 +1,6 @@
-/* eslint-disable notice/notice */
+/*
+ Stephen Fang - Technical Assessment Test
+ */
 
 import { test, expect, Page } from '@playwright/test';
 
@@ -13,7 +15,7 @@ const TODO_ITEMS = [
   'item two'
 ];
 
-test('create a new todo item', async ({ page }) => {
+test('Create a new todo item', async ({ page }) => {
   // Create 1st todo.
   await page.locator('.new-todo').fill(TODO_ITEMS[0]);
   await page.locator('.new-todo').press('Enter');
@@ -35,6 +37,27 @@ test('create a new todo item', async ({ page }) => {
   await expect(page.locator('.todo-list li')).toHaveCount(2);
   const secondTodo = page.locator('.todo-list li').nth(1);
   await expect(secondTodo.locator('label')).toHaveText(TODO_ITEMS[1]);
+});
+
+test('Edit an existing todo item', async ({ page }) => {
+  for (const item of TODO_ITEMS) {
+    await page.locator('.new-todo').fill(item);
+    await page.locator('.new-todo').press('Enter');
+  }
+
+  const todoItems = page.locator('.todo-list li');
+  const secondTodo = todoItems.nth(1);
+  await secondTodo.dblclick();
+  await expect(secondTodo.locator('.edit')).toHaveValue(TODO_ITEMS[1]);
+  await secondTodo.locator('.edit').fill('modified item two');
+  await secondTodo.locator('.edit').press('Enter');
+
+  // Verify the 2nd item has the new value.
+  await expect(todoItems).toHaveText([TODO_ITEMS[0], 'modified item two']);
+  await expect(page.locator('.view label')).toHaveText([TODO_ITEMS[0], 'modified item two']);
+  await expect(page.locator('.todo-count')).toHaveText('2 items left');
+  await checkNumberOfTodosInLocalStorage(page, 2);
+  await checkTodosInLocalStorage(page, 'modified item two');
 });
 
 async function checkNumberOfTodosInLocalStorage(page: Page, expected: number) {
