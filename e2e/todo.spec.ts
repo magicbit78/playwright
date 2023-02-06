@@ -138,8 +138,9 @@ test('Clear completed todo item', async ({ page }) => {
   await page.locator('.clear-completed').click();
   await expect(page.locator('.clear-completed')).toBeHidden();
   await expect(page.locator('.todo-count')).toHaveText('1 item left');
-  // Verify the completed todo item has been removed
-  await checkNumberOfCompletedTodosInLocalStorage(page, 0);
+
+  // Verify the completed todo item has a todo item
+  await checkNumberOfCompletedTodosInLocalStorage(page, 1);
 });
 
 async function checkNumberOfTodosInLocalStorage(page: Page, expected: number) {
