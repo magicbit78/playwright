@@ -92,13 +92,12 @@ test('Mark a todo item as completed', async ({ page }) => {
   await expect(page.locator('.view label')).toHaveText([TODO_ITEMS[0]]);
 
   // Mark the first todo item as completed and verify
-  const firstTodo = page.locator('.todo-list li .toggle').nth(0);
-  await firstTodo.locator('.toggle').check();
-  await expect(firstTodo).toHaveClass('completed');
+  const firstTodo = page.locator('.todo-list li .toggle').first().check();
+  await expect(page.locator('.todo-list li').first()).toHaveClass('completed');
   await checkNumberOfCompletedTodosInLocalStorage(page, 1);
 });
 
-test('Display active item', async ({ page }) => {
+test('Display active todo item', async ({ page }) => {
   // Initiate 2 items in todo list
   for (const item of TODO_ITEMS) {
     await page.locator('.new-todo').fill(item);
@@ -109,7 +108,7 @@ test('Display active item', async ({ page }) => {
   await checkNumberOfTodosInLocalStorage(page, 2);
 
   // Mark the first todo item as completed and verify
-  await page.locator('.todo-list li .toggle').nth(0).check();
+  await page.locator('.todo-list li .toggle').first().check();
   await checkNumberOfCompletedTodosInLocalStorage(page, 1);
 
   // View active list and verify the active todo item is the 2nd item in the full list
@@ -119,6 +118,28 @@ test('Display active item', async ({ page }) => {
   const activeTodo = page.locator('.todo-list li').nth(0);
   await expect(activeTodo.locator('label')).toHaveText(TODO_ITEMS[1]);
   await expect(page.locator('.todo-count')).toHaveText('1 item left');
+});
+
+test('Clear completed todo item', async ({ page }) => {
+  // Initiate 2 items in todo list
+  for (const item of TODO_ITEMS) {
+    await page.locator('.new-todo').fill(item);
+    await page.locator('.new-todo').press('Enter');
+  }
+
+  // Verify todo list contains 2 todo items
+  await checkNumberOfTodosInLocalStorage(page, 2);
+
+  // Mark the first todo item as completed and verify
+  await page.locator('.todo-list li .toggle').first().check();
+  await checkNumberOfCompletedTodosInLocalStorage(page, 1);
+
+  // Click "Clear Completed" and verify the todo list still has one item remained
+  await page.locator('.clear-completed').click();
+  await expect(page.locator('.clear-completed')).toBeHidden();
+  await expect(page.locator('.todo-count')).toHaveText('1 item left');
+  // Verify the completed todo item has been removed
+  await checkNumberOfCompletedTodosInLocalStorage(page, 0);
 });
 
 async function checkNumberOfTodosInLocalStorage(page: Page, expected: number) {
