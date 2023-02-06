@@ -83,6 +83,20 @@ test('Delete a todo item using the red X', async ({ page }) => {
   await checkTodosInLocalStorage(page, TODO_ITEMS[1]);
 });
 
+test('Mark a todo item as completed', async ({ page }) => {
+  // Create 1st todo.
+  await page.locator('.new-todo').fill(TODO_ITEMS[0]);
+  await page.locator('.new-todo').press('Enter');
+
+  // Verify there is one todo item in the list.
+  await expect(page.locator('.view label')).toHaveText([TODO_ITEMS[0]]);
+
+  // Mark the todo item as completed and verify
+  const firstTodo = page.locator('.todo-list li').nth(0);
+  await firstTodo.locator('.toggle').check();
+  await expect(firstTodo).toHaveClass('completed');
+});
+
 async function checkNumberOfTodosInLocalStorage(page: Page, expected: number) {
   await expect.poll(() => {
     return page.evaluate(() => JSON.parse(localStorage['react-todos']).length);
