@@ -40,11 +40,7 @@ test('Create a new todo item', async ({ page }) => {
 });
 
 test('Edit an existing todo item', async ({ page }) => {
-  // Initiate 2 items in todo list
-  for (const item of TODO_ITEMS) {
-    await page.locator('.new-todo').fill(item);
-    await page.locator('.new-todo').press('Enter');
-  }
+  await createDefaultTodos(page);
 
   // Edit the 2nd todo item
   const todoItems = page.locator('.todo-list li');
@@ -64,11 +60,7 @@ test('Edit an existing todo item', async ({ page }) => {
 });
 
 test('Delete a todo item using the red X', async ({ page }) => {
-  // Initiate 2 items in todo list
-  for (const item of TODO_ITEMS) {
-    await page.locator('.new-todo').fill(item);
-    await page.locator('.new-todo').press('Enter');
-  }
+  await createDefaultTodos(page);
 
   // Delete the first todo item using red X
   const todoItems = page.locator('.todo-list li');
@@ -84,12 +76,7 @@ test('Delete a todo item using the red X', async ({ page }) => {
 });
 
 test('Mark a todo item as completed', async ({ page }) => {
-  // Create 1st todo.
-  await page.locator('.new-todo').fill(TODO_ITEMS[0]);
-  await page.locator('.new-todo').press('Enter');
-
-  // Verify there is one todo item in the list.
-  await expect(page.locator('.view label')).toHaveText([TODO_ITEMS[0]]);
+  await createDefaultTodos(page);
 
   // Mark the first todo item as completed and verify
   const firstTodo = page.locator('.todo-list li .toggle').first().check();
@@ -98,14 +85,7 @@ test('Mark a todo item as completed', async ({ page }) => {
 });
 
 test('Display active todo item', async ({ page }) => {
-  // Initiate 2 items in todo list
-  for (const item of TODO_ITEMS) {
-    await page.locator('.new-todo').fill(item);
-    await page.locator('.new-todo').press('Enter');
-  }
-
-  // Verify todo list contains 2 todo items
-  await checkNumberOfTodosInLocalStorage(page, 2);
+  await createDefaultTodos(page);
 
   // Mark the first todo item as completed and verify
   await page.locator('.todo-list li .toggle').first().check();
@@ -121,14 +101,7 @@ test('Display active todo item', async ({ page }) => {
 });
 
 test('Clear completed todo item', async ({ page }) => {
-  // Initiate 2 items in todo list
-  for (const item of TODO_ITEMS) {
-    await page.locator('.new-todo').fill(item);
-    await page.locator('.new-todo').press('Enter');
-  }
-
-  // Verify todo list contains 2 todo items
-  await checkNumberOfTodosInLocalStorage(page, 2);
+  await createDefaultTodos(page);
 
   // Mark the first todo item as completed and verify
   await page.locator('.todo-list li .toggle').first().check();
@@ -159,4 +132,14 @@ async function checkNumberOfCompletedTodosInLocalStorage(page: Page, expected: n
   await expect.poll(() => {
     return page.evaluate(() => JSON.parse(localStorage['react-todos']).filter(i => i.completed).length);
   }).toBe(expected);
+}
+
+async function createDefaultTodos(page: Page) {
+  for (const item of TODO_ITEMS) {
+    await page.locator('.new-todo').fill(item);
+    await page.locator('.new-todo').press('Enter');
+  }
+
+  // Verify todo list contains 2 todo items
+  await checkNumberOfTodosInLocalStorage(page, 2);
 }
