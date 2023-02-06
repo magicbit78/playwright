@@ -46,7 +46,7 @@ test('Edit an existing todo item', async ({ page }) => {
     await page.locator('.new-todo').press('Enter');
   }
 
-  // edit the 2nd todo item
+  // Edit the 2nd todo item
   const todoItems = page.locator('.todo-list li');
   const secondTodo = todoItems.nth(1);
   await secondTodo.dblclick();
@@ -91,10 +91,34 @@ test('Mark a todo item as completed', async ({ page }) => {
   // Verify there is one todo item in the list.
   await expect(page.locator('.view label')).toHaveText([TODO_ITEMS[0]]);
 
-  // Mark the todo item as completed and verify
-  const firstTodo = page.locator('.todo-list li').nth(0);
+  // Mark the first todo item as completed and verify
+  const firstTodo = page.locator('.todo-list li .toggle').nth(0);
   await firstTodo.locator('.toggle').check();
   await expect(firstTodo).toHaveClass('completed');
+  await checkNumberOfCompletedTodosInLocalStorage(page, 1);
+});
+
+test('Display active item', async ({ page }) => {
+  // Initiate 2 items in todo list
+  for (const item of TODO_ITEMS) {
+    await page.locator('.new-todo').fill(item);
+    await page.locator('.new-todo').press('Enter');
+  }
+
+  // Verify todo list contains 2 todo items
+  await checkNumberOfTodosInLocalStorage(page, 2);
+
+  // Mark the first todo item as completed and verify
+  await page.locator('.todo-list li .toggle').nth(0).check();
+  await checkNumberOfCompletedTodosInLocalStorage(page, 1);
+
+  // View active list and verify the active todo item is the 2nd item in the full list
+  await page.locator('.filters >> text=Active').click();
+  await expect(page.locator('.filters >> text=Active')).toHaveClass('selected');
+  await expect(page.locator('.todo-list li')).toHaveCount(1);
+  const activeTodo = page.locator('.todo-list li').nth(0);
+  await expect(activeTodo.locator('label')).toHaveText(TODO_ITEMS[1]);
+  await expect(page.locator('.todo-count')).toHaveText('1 item left');
 });
 
 async function checkNumberOfTodosInLocalStorage(page: Page, expected: number) {
